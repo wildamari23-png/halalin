@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root{--primary:#0B3D91;--white:#fff;--bg:#eef4ff}
+    *{box-sizing:border-box} body{margin:0;font-family:Inter,Arial;background:var(--bg);color:#16355f}
+    .hidden{display:none}.container{padding:14px;max-width:1100px;margin:auto}
+    .card{background:var(--white);padding:14px;border-radius:16px;box-shadow:0 8px 20px rgba(11,61,145,.15);animation:fadeIn .5s}
+    .btn{border:0;background:var(--primary);color:#fff;padding:10px 14px;border-radius:12px}
+    input,select{width:100%;padding:10px;border-radius:10px;border:1px solid #c9d8f4;margin:6px 0}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+    .hero{background:linear-gradient(120deg,#0B3D91,#1f5cc5);color:#fff;padding:30px;border-radius:22px;animation:slide 1s}
+    .notif{position:fixed;right:10px;top:10px;background:#183f8e;color:#fff;padding:10px 12px;border-radius:10px;z-index:1000;display:none}
+    .tabs{display:flex;gap:8px;overflow:auto;margin:10px 0}.tab{padding:8px 10px;background:#dce7ff;border-radius:10px;cursor:pointer}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes slide{from{opacity:0;transform:translateX(-15px)}to{opacity:1;transform:translateX(0)}}
+  </style>
+</head>
+<body>
+<div class="notif" id="notif"></div>
+<div class="container">
+  <div id="login" class="card">
+    <h2>🔐 Login Halalin Printing</h2>
+    <input id="username" placeholder="username"/>
+    <input id="password" type="password" placeholder="password"/>
+    <button class="btn" onclick="doLogin()">Masuk</button>
+    <small>Demo: grandadmin/admin123 atau admin/admin123</small>
+  </div>
+
+  <div id="app" class="hidden">
+    <div class="hero">
+      <h1>Halalin Printing</h1>
+      <p>Marketplace modern percetakan undangan, banner, stempel, dan undangan digital.</p>
+    </div>
+    <div class="tabs">
+      <div class="tab" onclick="showTab('produk')">Produk</div><div class="tab" onclick="showTab('keranjang')">Keranjang</div><div class="tab" onclick="showTab('admin')">Admin</div><div class="tab" onclick="showTab('laporan')">Laporan</div>
+    </div>
+
+    <section id="produk" class="card">
+      <h3>Landing Produk + Demo Undangan Digital</h3>
+      <div class="grid" id="productGrid"></div>
+      <video controls width="100%" style="margin-top:8px;border-radius:12px"><source src="https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" type="video/mp4"></video>
+    </section>
+
+    <section id="keranjang" class="card hidden">
+      <h3>Order Keranjang</h3>
+      <div id="cartList"></div>
+      <input id="customerName" placeholder="Nama pelanggan"/><input id="customerPhone" placeholder="No HP"/>
+      <button class="btn" onclick="checkout()">Checkout & Buat Invoice</button>
+    </section>
+
+    <section id="admin" class="card hidden">
+      <h3>Admin Panel</h3>
+      <div id="adminOnly" class="hidden">
+        <h4>Tambah/Update Produk</h4>
+        <input id="pName" placeholder="Nama produk"/><input id="pCat" placeholder="Kategori"/>
+        <input id="pUnit" placeholder="Unit"/><input id="pPrice" type="number" placeholder="Harga"/><input id="pDisc" type="number" placeholder="Diskon %"/>
+        <button class="btn" onclick="saveProduct()">Simpan Produk</button>
+        <h4>Atur Harga Satuan & Diskon</h4>
+        <input id="rCat" placeholder="Kategori"/><input id="rMin" type="number" placeholder="Min Qty"/><input id="rPrice" type="number" placeholder="Harga Satuan"/><input id="rDisc" type="number" placeholder="Diskon %"/>
+        <button class="btn" onclick="saveRule()">Simpan Rule</button>
+      </div>
+      <p id="adminInfo"></p>
+    </section>
+
+    <section id="laporan" class="card hidden">
+      <h3>Monitoring Kartu & Laporan PDF</h3>
+      <div class="grid"><div class="card"><b id="kpiOrders">0</b><div>Total Order</div></div><div class="card"><b id="kpiSales">Rp 0</b><div>Total Omzet</div></div></div>
+      <button class="btn" onclick="report('daily')">PDF Harian</button>
+      <button class="btn" onclick="report('monthly')">PDF Bulanan</button>
+      <button class="btn" onclick="report('yearly')">PDF Tahunan</button>
+    </section>
+  </div>
+</div>
+<script>
+let state={user:null,products:[],orders:[],priceRules:[],cart:[]};
+function notify(msg){const n=document.getElementById('notif');n.textContent=msg;n.style.display='block';setTimeout(()=>n.style.display='none',2400)}
+function showTab(id){['produk','keranjang','admin','laporan'].forEach(s=>document.getElementById(s).classList.add('hidden'));document.getElementById(id).classList.remove('hidden')}
+function doLogin(){google.script.run.withSuccessHandler(u=>{state.user=u;document.getElementById('login').classList.add('hidden');document.getElementById('app').classList.remove('hidden');document.getElementById('adminInfo').textContent='Login sebagai: '+u.name+' ('+u.role+')';if(u.role==='grand_admin')document.getElementById('adminOnly').classList.remove('hidden');loadData();notify('Login berhasil ✅')}).withFailureHandler(e=>notify(e.message)).login(username.value,password.value)}
+function loadData(){google.script.run.withSuccessHandler(d=>{state={...state,...d};renderProducts();renderKPI();}).getInitialData()}
+function renderProducts(){productGrid.innerHTML='';state.products.forEach(p=>{const el=document.createElement('div');el.className='card';el.innerHTML=`<h4>${p.name}</h4><div>${p.category}</div><div>Rp ${Number(p.basePrice).toLocaleString('id-ID')}</div><button class='btn' onclick='addCart(${JSON.stringify(JSON.stringify(p))})'>Tambah</button>`;productGrid.appendChild(el)})}
+function addCart(raw){const p=JSON.parse(raw);const existing=state.cart.find(i=>i.id===p.id);if(existing)existing.qty++;else state.cart.push({...p,qty:1});renderCart();notify('Produk masuk keranjang 🛒')}
+function renderCart(){cartList.innerHTML=state.cart.map(i=>`<div>${i.name} x ${i.qty} = Rp ${(i.qty*i.basePrice).toLocaleString('id-ID')}</div>`).join('')||'Keranjang kosong';}
+function checkout(){if(!state.cart.length)return notify('Keranjang kosong');const subtotal=state.cart.reduce((a,b)=>a+b.qty*Number(b.basePrice),0);const discountTotal=state.cart.reduce((a,b)=>a+(b.qty*Number(b.basePrice)*Number(b.discountPct||0)/100),0);const payload={userId:state.user.id,customerName:customerName.value,customerPhone:customerPhone.value,items:state.cart,subtotal,discountTotal,grandTotal:subtotal-discountTotal};google.script.run.withSuccessHandler(r=>{notify('Order sukses. Invoice dibuat 🎉');window.open(r.invoicePdfUrl,'_blank');state.cart=[];renderCart();loadData()}).withFailureHandler(e=>notify(e.message)).saveOrder(payload)}
+function saveProduct(){const p={name:pName.value,category:pCat.value,unit:pUnit.value,basePrice:pPrice.value,discountPct:pDisc.value};google.script.run.withSuccessHandler(()=>{notify('Produk disimpan');loadData()}).upsertProduct(p)}
+function saveRule(){const rule={category:rCat.value,minQty:rMin.value,unitPrice:rPrice.value,discountPct:rDisc.value};google.script.run.withSuccessHandler(()=>notify('Rule harga tersimpan')).upsertPriceRule(rule)}
+function report(period){google.script.run.withSuccessHandler(r=>{notify('Report dibuat');window.open(r.pdfUrl,'_blank')}).generateReports(period)}
+function renderKPI(){kpiOrders.textContent=state.orders.length;kpiSales.textContent='Rp '+state.orders.reduce((a,b)=>a+Number(b.grandTotal||0),0).toLocaleString('id-ID')}
+</script>
+</body>
+</html>
