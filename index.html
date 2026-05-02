@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --primary:#0B3D91; --primary-2:#1d5dd2; --white:#fff; --bg:#f4f8ff; --text:#102645; --muted:#5d7395;
+      --radius:18px; --shadow:0 10px 30px rgba(11,61,145,.12);
+    }
+    *{box-sizing:border-box} html,body{margin:0;font-family:Inter,Arial,sans-serif;background:var(--bg);color:var(--text)}
+    .hidden{display:none!important} .container{max-width:1200px;margin:auto;padding:16px}
+    .topbar{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.88);backdrop-filter:blur(8px);border-bottom:1px solid #e4ecfb}
+    .top-inner{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;max-width:1200px;margin:auto}
+    .brand{font-weight:800;color:var(--primary)} .chip{padding:8px 12px;border-radius:999px;background:#e3ecff;color:var(--primary);font-size:12px;font-weight:700}
+    .card{background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;animation:fade .5s}
+    .btn{border:0;background:var(--primary);color:#fff;padding:11px 14px;border-radius:12px;font-weight:700;cursor:pointer;transition:.2s}
+    .btn:hover{transform:translateY(-1px);background:var(--primary-2)} .btn.outline{background:#fff;color:var(--primary);border:1px solid #c6d8ff}
+    input,select{width:100%;padding:11px;border-radius:11px;border:1px solid #cddcf9;margin:6px 0;font-family:inherit}
+    .hero{margin-top:10px;background:linear-gradient(120deg,#0B3D91,#2f7bff);color:#fff;padding:26px;border-radius:26px;overflow:hidden;position:relative}
+    .hero h1{font-size:30px;margin:0 0 8px}.hero p{margin:0 0 14px;color:#d9e8ff;max-width:560px}.hero-wave{position:absolute;right:-40px;top:-40px;width:180px;height:180px;border-radius:50%;background:rgba(255,255,255,.2)}
+    .menu{display:flex;gap:8px;overflow:auto;padding:10px 2px}.tab{padding:9px 12px;background:#dce8ff;border-radius:999px;color:#214d93;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
+    .product{padding:14px;border:1px solid #e1eafa;border-radius:16px;background:#fff}.product h4{margin:0 0 4px}.muted{color:var(--muted);font-size:13px}
+    .price{font-size:20px;font-weight:800;color:var(--primary);margin:8px 0}
+    .notif{position:fixed;right:14px;top:14px;background:#0d2f70;color:#fff;padding:12px 14px;border-radius:12px;display:none;z-index:99}
+    .kpi{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.kpi .card b{font-size:24px;color:var(--primary)}
+    .login-wrap{min-height:80vh;display:grid;place-items:center}.login-card{max-width:420px;width:100%}
+    @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+    @media(max-width:600px){.hero h1{font-size:24px}.container{padding:12px}}
+  </style>
+</head>
+<body>
+<div class="notif" id="notif"></div>
+<header class="topbar hidden" id="topbar"><div class="top-inner"><div class="brand">Halalin Printing Marketplace</div><div class="chip" id="roleChip">Guest</div></div></header>
+
+<div class="container">
+  <section id="login" class="login-wrap">
+    <div class="card login-card">
+      <h2 style="margin-top:0">Login Modern</h2>
+      <p class="muted">Masuk ke dashboard marketplace Halalin Printing.</p>
+      <input id="username" placeholder="Username">
+      <input id="password" type="password" placeholder="Password">
+      <button class="btn" style="width:100%" onclick="doLogin()">Masuk Sekarang</button>
+      <p class="muted">Demo: grandadmin/admin123 atau admin/admin123</p>
+    </div>
+  </section>
+
+  <main id="app" class="hidden">
+    <section class="hero card">
+      <div class="hero-wave"></div>
+      <h1>Landing Page Marketplace Percetakan</h1>
+      <p>Produk undangan, banner, stempel, dan undangan digital dalam satu platform modern, cepat, dan responsif Android.</p>
+      <button class="btn outline" onclick="showTab('produk')">Belanja Sekarang</button>
+    </section>
+
+    <nav class="menu">
+      <div class="tab" onclick="showTab('produk')">Produk Marketplace</div>
+      <div class="tab" onclick="showTab('keranjang')">Keranjang</div>
+      <div class="tab" onclick="showTab('admin')">Kelola Admin</div>
+      <div class="tab" onclick="showTab('laporan')">Monitoring & Laporan</div>
+    </nav>
+
+    <section id="produk" class="card">
+      <h3 style="margin-top:0">Katalog Produk</h3>
+      <p class="muted">Tampilan marketplace modern dengan harga satuan dan diskon.</p>
+      <div class="grid" id="productGrid"></div>
+      <h4>Demo Undangan Digital</h4>
+      <video controls width="100%" style="border-radius:14px"><source src="https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" type="video/mp4"></video>
+    </section>
+
+    <section id="keranjang" class="card hidden">
+      <h3 style="margin-top:0">Keranjang Pesanan</h3>
+      <div id="cartList" class="muted"></div>
+      <div class="grid"><input id="customerName" placeholder="Nama pelanggan"><input id="customerPhone" placeholder="No. WhatsApp"></div>
+      <button class="btn" onclick="checkout()">Checkout + Buat Invoice PDF</button>
+    </section>
+
+    <section id="admin" class="card hidden">
+      <h3 style="margin-top:0">Panel Admin</h3>
+      <p id="adminInfo" class="muted"></p>
+      <div id="adminOnly" class="hidden">
+        <h4>Produk</h4>
+        <div class="grid"><input id="pName" placeholder="Nama produk"><input id="pCat" placeholder="Kategori"><input id="pUnit" placeholder="Unit"><input id="pPrice" type="number" placeholder="Harga"><input id="pDisc" type="number" placeholder="Diskon %"></div>
+        <button class="btn" onclick="saveProduct()">Simpan Produk</button>
+        <h4>Harga Satuan & Diskon</h4>
+        <div class="grid"><input id="rCat" placeholder="Kategori"><input id="rMin" type="number" placeholder="Min Qty"><input id="rPrice" type="number" placeholder="Harga Satuan"><input id="rDisc" type="number" placeholder="Diskon %"></div>
+        <button class="btn" onclick="saveRule()">Simpan Rule</button>
+      </div>
+    </section>
+
+    <section id="laporan" class="card hidden">
+      <h3 style="margin-top:0">Monitoring Kartu</h3>
+      <div class="kpi"><div class="card"><b id="kpiOrders">0</b><div class="muted">Total Order</div></div><div class="card"><b id="kpiSales">Rp 0</b><div class="muted">Total Omzet</div></div></div>
+      <h4>Download Laporan PDF</h4>
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" onclick="report('daily')">Harian</button><button class="btn" onclick="report('monthly')">Bulanan</button><button class="btn" onclick="report('yearly')">Tahunan</button></div>
+    </section>
+  </main>
+</div>
+
+<script>
+let state={user:null,products:[],orders:[],priceRules:[],cart:[]};
+const rupiah=n=>`Rp ${Number(n||0).toLocaleString('id-ID')}`;
+function notify(msg){const n=notif;n.textContent=msg;n.style.display='block';setTimeout(()=>n.style.display='none',2300)}
+function showTab(id){['produk','keranjang','admin','laporan'].forEach(s=>document.getElementById(s).classList.add('hidden'));document.getElementById(id).classList.remove('hidden')}
+function doLogin(){google.script.run.withSuccessHandler(u=>{state.user=u;login.classList.add('hidden');app.classList.remove('hidden');topbar.classList.remove('hidden');roleChip.textContent=`${u.name} • ${u.role}`;adminInfo.textContent=`Login sebagai ${u.name} (${u.role})`;if(u.role==='grand_admin')adminOnly.classList.remove('hidden');loadData();notify('Login berhasil')}).withFailureHandler(e=>notify(e.message)).login(username.value,password.value)}
+function loadData(){google.script.run.withSuccessHandler(d=>{state={...state,...d};renderProducts();renderCart();renderKPI();}).getInitialData()}
+function renderProducts(){productGrid.innerHTML='';state.products.forEach(p=>{const d=document.createElement('div');d.className='product';d.innerHTML=`<h4>${p.name}</h4><div class='muted'>${p.category}</div><div class='price'>${rupiah(p.basePrice)}</div><div class='muted'>Diskon ${p.discountPct||0}%</div><button class='btn' style='margin-top:8px' onclick='addCart(${JSON.stringify(JSON.stringify(p))})'>+ Keranjang</button>`;productGrid.appendChild(d)})}
+function addCart(raw){const p=JSON.parse(raw);const e=state.cart.find(i=>i.id===p.id);if(e)e.qty++;else state.cart.push({...p,qty:1});renderCart();notify('Ditambahkan ke keranjang')}
+function renderCart(){if(!state.cart.length){cartList.innerHTML='Keranjang masih kosong';return;}cartList.innerHTML=state.cart.map(i=>`<div style='padding:8px 0;border-bottom:1px dashed #d7e4ff'><b>${i.name}</b> x ${i.qty}<div>${rupiah(i.qty*i.basePrice)}</div></div>`).join('')}
+function checkout(){if(!state.cart.length)return notify('Keranjang kosong');const subtotal=state.cart.reduce((a,b)=>a+b.qty*Number(b.basePrice),0);const discountTotal=state.cart.reduce((a,b)=>a+(b.qty*Number(b.basePrice)*(Number(b.discountPct||0)/100)),0);const payload={userId:state.user.id,customerName:customerName.value,customerPhone:customerPhone.value,items:state.cart,subtotal,discountTotal,grandTotal:subtotal-discountTotal};google.script.run.withSuccessHandler(r=>{notify('Order sukses, invoice dibuat');window.open(r.invoicePdfUrl,'_blank');state.cart=[];loadData();showTab('laporan')}).withFailureHandler(e=>notify(e.message)).saveOrder(payload)}
+function saveProduct(){const p={name:pName.value,category:pCat.value,unit:pUnit.value,basePrice:pPrice.value,discountPct:pDisc.value};google.script.run.withSuccessHandler(()=>{notify('Produk tersimpan');loadData()}).upsertProduct(p)}
+function saveRule(){const rule={category:rCat.value,minQty:rMin.value,unitPrice:rPrice.value,discountPct:rDisc.value};google.script.run.withSuccessHandler(()=>notify('Rule harga tersimpan')).upsertPriceRule(rule)}
+function report(period){google.script.run.withSuccessHandler(r=>{notify(`Laporan ${period} siap`);window.open(r.pdfUrl,'_blank')}).withFailureHandler(e=>notify(e.message)).generateReports(period)}
+function renderKPI(){kpiOrders.textContent=state.orders.length;kpiSales.textContent=rupiah(state.orders.reduce((a,b)=>a+Number(b.grandTotal||0),0))}
+</script>
+</body>
+</html>
